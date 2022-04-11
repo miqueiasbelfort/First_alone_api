@@ -3,19 +3,14 @@ const jwt = require("jsonwebtoken")
 
 //helpers
 const createUserToken =  require("../helpers/create-user-token")
+const getToken = require("../helpers/get-token")
 
 module.exports = class AuthController {
 
-    //registrar usuário
+    //Registrar usuário
     static async register(req, res){
 
         const {name, email, age, city, state, password, confirpassword} = req.body
-
-        let photo = ""
-
-        if(req.file){
-            photo = req.file.filename
-        }
 
         if(!name || !email || !age || !city || !state || !password || !confirpassword){
             res.status(422).json({message: "Algum campo está faltando!"})
@@ -41,7 +36,6 @@ module.exports = class AuthController {
             age,
             city,
             state,
-            photo,
             password
         })
 
@@ -57,4 +51,38 @@ module.exports = class AuthController {
         }
     }
 
+    //Login
+    static async login(req, res){
+        const {email, password} = req.body
+
+        if(!email){
+            res.status(422).json({message: "O email é obrigatorio!"})
+            return
+        }
+        if(!password){
+            res.status(422).json({message: "A senha é obrigatorio!"})
+            return
+        }
+
+        //checando se o usuário existe
+        const user = await User.findOne({email: email}) //Pegando usuário do banco de dados pelo email
+
+        if(!user){
+            res.status(422).json({message: "Esse usuário não existe!"})
+            return
+        }
+
+        if(password != user.password){ //se a senha não for igual a senha do banco de dados
+            res.status(422).json({message: "Senha incoreta!"})
+            return
+        }
+
+        await createUserToken(user, req, res)
+
+    }
+
+    //Rota para checar o usuário
+    static async checkUser(req, res){
+        
+    }
 }
