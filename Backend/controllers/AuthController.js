@@ -82,7 +82,27 @@ module.exports = class AuthController {
     }
 
     //Rota para checar o usuário
-    static async checkUser(req, res){
-        
+    static async userRoom(req, res){
+
+        let currentUser
+        //console.log(req.headers.authorization)
+
+        if(req.headers.authorization){
+
+            const token = getToken(req) //Pegando o token
+            const decoded = jwt.verify(token, "CriandoPelaPrimeiraVezUmaAPISozinho") //Pegando tudo relacionado ao token
+            //console.log(decoded)
+
+            //Pegando um usuário, pelo id que foi 
+            //passado junto com o Token
+            currentUser = await User.findById(decoded.id) 
+
+            currentUser.password = undefined // Para que a senha não seja repasada também
+
+        } else {
+            currentUser = null
+        }
+
+        res.status(200).json(currentUser)
     }
 }
