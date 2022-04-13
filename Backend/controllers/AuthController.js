@@ -81,7 +81,7 @@ module.exports = class AuthController {
 
     }
 
-    //Rota para checar o usuário
+    //Rota para checar o usuário e pegar todos os dados dele
     static async userRoom(req, res){
 
         let currentUser
@@ -104,5 +104,52 @@ module.exports = class AuthController {
         }
 
         res.status(200).json(currentUser)
+    }
+
+    //Rota para peagr todos os usuários
+    static async allUsers(req, res){
+        
+        const users = await User.find().select("-password")
+        res.status(200).json({users})
+
+    }
+
+    //Rota apara edittar usuários
+    static async updateUsers(req, res){
+
+        const id = req.params.id
+
+        const { name, email, age, city, state, password, confirpassword } = req.body
+
+        if(!name || !email || !age || !city || !state || !password || !confirpassword){
+            res.status(422).json({message: "Algum campo está faltando!"})
+            return
+        }
+        if(password != confirpassword){
+            res.status(422).json({message: "As senhas não são iguais!"})
+            return
+        }
+
+        const user = {
+            name,
+            email,
+            age,
+            city,
+            state,
+            password
+        }
+
+        try {
+
+            const updateUser = await User.findByIdAndUpdate(id, user)
+            res.status(200).json({message: "Usuário Atualizado!"})
+
+        } catch(err) {
+
+            res.status(500).json({message: err})
+            return
+
+        }
+
     }
 }
